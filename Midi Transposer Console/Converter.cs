@@ -30,9 +30,10 @@ namespace Midi_Transposer_Console
         public void ConvertWavToMidi(string inputFile)
         {
             // 4096 is about 40ms, 2048 is about 20ms, good for speech
+            // But 2048 is slow and gives terrible results
             uint windowSize = 4096;
             float noteThreshold = 0.1f; // Amplitudes above this get translated to a midi note
-            // Note that we can translate this amplitude to a velocity though, but we still don't want 10billion unheard notes
+            // Note that we translate the amplitude to a velocity, but we still don't want 10billion unheard notes
 
             List<float> audioContentList = new List<float>(); // TOOD: Make this an array if we can calc the size
             uint sampleRate = 0;
@@ -95,6 +96,7 @@ namespace Midi_Transposer_Console
                             maxAmp = amplitude;
                         amplitude *= 25; // Scale it up so you can see anything for basic display
                         // While running we're calculating the amp normalization for the MIDI to use
+                        // We didn't previously have access to these values because we calced them after iteration
                         float x = i * xAxisRatio;
                         float y = imageSize - (j * yAxisRatio);
                         //if (amplitude > noteThreshold)
@@ -248,7 +250,8 @@ namespace Midi_Transposer_Console
 
                 for (int i = 0; i < chunk.Length; i++)
                 {
-                    //i've tried windowing here but didn't seem to help me
+                    //Guy on the internet said he tried windowing and it didn't help
+                    // but TODO: Windowing (Manning?)
                     chunk[i].X = audioContent[k + i];
                     chunk[i].Y = 0;
                 }
