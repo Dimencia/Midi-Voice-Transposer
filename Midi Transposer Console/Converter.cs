@@ -30,8 +30,8 @@ namespace Midi_Transposer_Console
         public void ConvertWavToMidi(string inputFile)
         {
             // 4096 is about 40ms, 2048 is about 20ms, good for speech
-            uint windowSize = 2048;
-            float noteThreshold = 0.25f; // Amplitudes above this get translated to a midi note
+            uint windowSize = 4096;
+            float noteThreshold = 0.1f; // Amplitudes above this get translated to a midi note
             // Note that we can translate this amplitude to a velocity though, but we still don't want 10billion unheard notes
 
             List<float> audioContentList = new List<float>(); // TOOD: Make this an array if we can calc the size
@@ -127,12 +127,19 @@ namespace Midi_Transposer_Console
                 NotesCollection notes = notesManager.Notes;
                 for (int i = 0; i < timesteps; i++)
                 {
-                    for (uint j = 0; j < maxFreqToGraph; j++)
+                    foreach (uint j in MidiFrequencyMap)
                     {
-                        var amplitude = spectrumList[i][j] * ampMult;
+                        var amplitude = Math.Clamp(spectrumList[i][j] * ampMult * 4,0,1);
                         // I tried taking the log of amp (and even 10^amp), but it just kept spamming 1's in either case.
                         // But really, the amps are so low, something seems wrong.
-                        // ampMult is often nearly 10.  
+                        // ampMult is often nearly 10.  And often, somehow, no values end up anywhere near 1.0 amplitude even after applying it
+                        // And basically no matter what I do, it's not loud enough
+
+
+                        // Something's not right here, other than that, I think.
+                        // It seems high notes get a lot more volume than low ones
+                        // Which sounds like a log scale human hearing thing
+                        // ... Or just the piano soundfont being weird
                         if (amplitude > noteThreshold)
                         {
                             Console.WriteLine(amplitude);
@@ -205,12 +212,11 @@ namespace Midi_Transposer_Console
             // Each index is the MIDI note number, and each value is the frequency for that note number
             // We just generate this once on instantiation and use that
 
-            // Starting point is that A = 440...
-            var A = 440f;
+           
             float[] result = new float[128];
             for(int i = 0; i < 128; i++)
             {
-                result[i] = (A / 32) * (float)(Math.Pow(2, ((i - 9) / 12))); // Internet said this is how to get them. No idea where the 9 and 12 come from.
+                result[i] = 8.1758f * (float)(Math.Pow(2, i/12f)); // Internet said this is how to get them
             }
             return result;
         }
