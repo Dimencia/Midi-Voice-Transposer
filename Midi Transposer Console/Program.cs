@@ -6,7 +6,7 @@ namespace Midi_Transposer_Console
     {
         static void Main(string[] args)
         {
-            new Converter().ConvertWavToMidi(@"C:\Users\Dimen_hmzu9w6\Downloads\bohemian_vocal_snippet.wav");
+            new Converter().ConvertWavToMidi(@"C:\Users\Dimen_hmzu9w6\Documents\bohemian_vocals_intro_snippet.wav");
         }
     }
 }
